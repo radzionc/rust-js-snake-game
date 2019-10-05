@@ -1,0 +1,42 @@
+html {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  outline: 0;
+  margin: 0;
+}
+
+body {
+  height: 100%;
+  background: #2c3e50;
+  padding: 60px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+canvas {
+  border: 2px solid white;
+}
+
+#container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+p {
+  font-size: 3vmin;
+  margin: 2%;
+}
