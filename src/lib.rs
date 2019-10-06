@@ -1,6 +1,7 @@
 mod utils;
 
 use wasm_bindgen::prelude::*;
+use std::marker::Copy;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -19,15 +20,16 @@ pub fn greet() {
 }
 
 #[wasm_bindgen]
+#[derive(Debug, Copy, Clone)]
 pub struct Vector {
-    pub x: f32,
-    pub y: f32
+    pub x: f64,
+    pub y: f64
 }
 
 #[wasm_bindgen]
 impl Vector {
     #[wasm_bindgen(constructor)]
-    pub fn new(x: f32, y: f32) -> Vector {
+    pub fn new(x: f64, y: f64) -> Vector {
         Vector { x, y }
     }
     pub fn subtract(&self, other: &Vector) -> Vector {
@@ -38,16 +40,16 @@ impl Vector {
         Vector { x: self.x + other.x, y: self.y + other.y }
     }
 
-    pub fn scale_by(&self, number: f32) -> Vector {
+    pub fn scale_by(&self, number: f64) -> Vector {
         Vector { x: self.x * number, y: self.y * number }
     }
 
-    pub fn length(&self) -> f32 {
+    pub fn length(&self) -> f64 {
         self.x.hypot(self.y)
     }
 
     pub fn normalize(&self) -> Vector {
-        self.scale_by(1_f32 / self.length())
+        self.scale_by(1_f64 / self.length())
     }
 
     pub fn is_opposite(&self, other: &Vector) -> bool {
@@ -74,7 +76,7 @@ impl<'a> Segment<'a> {
         self.end.subtract(&self.start)
     }
 
-    pub fn length(&self) -> f32 {
+    pub fn length(&self) -> f64 {
         self.get_vector().length()
     }
 
@@ -90,3 +92,44 @@ impl<'a> Segment<'a> {
         Vector::new(self.start.x + u * vector.x, self.start.y + u * vector.y)
     }
 }
+
+struct Config {
+    width: i32,
+    height: i32,
+    speed: f64,
+    initial_snake_length: i32,
+    initial_direction: Vector
+}
+
+static TOP:Vector = Vector { x: 0_f64, y: -1_f64 };
+static RIGHT:Vector = Vector { x: 1_f64, y: 0_f64 };
+static DOWN:Vector = Vector { x: 0_f64, y: 1_f64 };
+static LEFT:Vector = Vector { x: -1_f64, y: 0_f64 };
+
+static DEFAULT_CONFIG:Config = Config {
+    width: 17,
+    height: 15,
+    speed: 0.006,
+    initial_snake_length: 3,
+    initial_direction: RIGHT 
+};
+
+fn get_segments_from_vectors(vectors: &Vec<Vector>) -> Vec<Segment> {
+    let before_last = vectors.len() - 1;
+    let mut segments:Vec<Segment> = Vec::new();
+    for i in 0..before_last {
+        segments.push(Segment::new(&vectors[i], &vectors[i + 1]));
+    }
+    segments
+}
+
+// fn get_food(width: i32, height: i32, snake: &Vec<Vector>) -> Vector {
+//     let mut all_positions: Vec<Vector> = Vec::new();
+//     for x in 0..width {
+//         for y in 0..height {
+//             all_positions.push(Vector::new(f64::from(x) + 0.5, f64::from(y) + 0.5));
+//         }
+//     }
+//     let segments = get_segments_from_vectors(snake);
+//     let free_positions = all_positions.iter().filter(|position| )
+// }
