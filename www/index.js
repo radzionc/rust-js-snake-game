@@ -1,6 +1,4 @@
-import * as wasm from "wasm-snake-game";
-
-wasm.greet();
+import { Vector } from "wasm-snake-game";
 
 // #region general utils
 const getRange = length => [...Array(length).keys()]
@@ -11,42 +9,6 @@ const getLastElement = array => array[array.length - 1]
 // #endregion
 
 // #region geometry
-class Vector {
-  constructor(x, y) {
-    this.x = x
-    this.y = y
-  }
-
-  subtract({ x, y }) {
-    return new Vector(this.x - x, this.y - y)
-  }
-
-  add({ x, y }) {
-    return new Vector(this.x + x, this.y + y)
-  }
-
-  scaleBy(number) {
-    return new Vector(this.x * number, this.y * number)
-  }
-
-  length() {
-    return Math.hypot(this.x, this.y)
-  }
-
-  normalize() {
-    return this.scaleBy(1 / this.length())
-  }
-
-  isOpposite(vector) {
-    const { x, y } = this.add(vector)
-    return areEqual(x, 0) && areEqual(y, 0)
-  }
-
-  equalTo({ x, y }) {
-    return areEqual(this.x, x) && areEqual(this.y, y)
-  }
-}
-
 class Segment {
   constructor(start, end) {
     this.start = start
@@ -119,7 +81,7 @@ const getNewTail = (oldSnake, distance) => {
     const segment = new Segment(point, next)
     const length = segment.length()
     if (length >= distance) {
-      const vector = segment.getVector().normalize().scaleBy(acc.distance)
+      const vector = segment.getVector().normalize().scale_by(acc.distance)
       return {
         distance: 0,
         tail: [...acc.tail, point.add(vector)]
@@ -136,16 +98,16 @@ const getNewTail = (oldSnake, distance) => {
 
 const getNewDirection = (oldDirection, movement) => {
   const newDirection = DIRECTION[movement]
-  const shouldChange = newDirection && !oldDirection.isOpposite(newDirection)
+  const shouldChange = newDirection && !oldDirection.is_opposite(newDirection)
   return shouldChange ? newDirection : oldDirection
 }
 
 const getStateAfterMoveProcessing = (state, movement, distance) => {
   const newTail = getNewTail(state.snake, distance)
   const oldHead = getLastElement(state.snake)
-  const newHead = oldHead.add(state.direction.scaleBy(distance))
+  const newHead = oldHead.add(state.direction.scale_by(distance))
   const newDirection = getNewDirection(state.direction, movement)
-  if (!state.direction.equalTo(newDirection)) {
+  if (!state.direction.equal_to(newDirection)) {
     const { x: oldX, y: oldY } = oldHead
     const [
       oldXRounded,
@@ -156,7 +118,7 @@ const getStateAfterMoveProcessing = (state, movement, distance) => {
     const getStateWithBrokenSnake = (old, oldRounded, newRounded, getBreakpoint) => {
       const breakpointComponent = oldRounded + (newRounded > oldRounded ? 0.5 : -0.5)
       const breakpoint = getBreakpoint(breakpointComponent)
-      const vector = newDirection.scaleBy(distance - Math.abs(old - breakpointComponent))
+      const vector = newDirection.scale_by(distance - Math.abs(old - breakpointComponent))
       const head = breakpoint.add(vector)
       return {
         ...state,
@@ -254,7 +216,7 @@ const getGame = (config = {}) => {
     Math.round(width / 2) - 0.5,
     Math.round(height / 2) - 0.5
   )
-  const tailtip = head.subtract(initialDirection.scaleBy(initialSnakeLength))
+  const tailtip = head.subtract(initialDirection.scale_by(initialSnakeLength))
   const snake = [tailtip, head]
   const food = getFood(width, height, snake)
 
@@ -274,7 +236,7 @@ const getGame = (config = {}) => {
 }
 
 // needed: 
-// position.scaleBy()
+// position.scale_by()
 // getRange()
 // getGame()
 const UPDATE_EVERY = 1000 / 60
@@ -311,7 +273,7 @@ const getProjectors = (containerSize, { width, height }) => {
 
   return {
     projectDistance: distance => distance * unitOnScreen,
-    projectPosition: position => position.scaleBy(unitOnScreen)
+    projectPosition: position => position.scale_by(unitOnScreen)
   }
 }
 
@@ -339,6 +301,7 @@ const renderCells = (context, cellSide, width, height) => {
 }
 
 const renderFood = (context, cellSide, { x, y }) => {
+  console.log(x, y)
   context.beginPath()
   context.arc(x, y, cellSide / 2.5, 0, 2 * Math.PI)
   context.fillStyle = '#e74c3c'
