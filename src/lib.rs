@@ -94,6 +94,18 @@ impl<'a> Segment<'a> {
     }
 }
 
+pub struct State {
+    width: i32,
+    height: i32,
+    speed: f64,
+    initial_snake_length: i32,
+    initial_direction: Vector,
+    snake: Vec<Vector>,
+    direction: Vector,
+    food: Vector,
+    score: i32
+}
+
 struct Config {
     width: i32,
     height: i32,
@@ -186,4 +198,9 @@ fn get_new_direction(old_direction: Vector, movement: Movement) -> Vector {
         return old_direction
     }
     new_direction
+}
+
+fn get_state_after_move_processing(state: &State, movement: Movement, distance: f64) -> State {
+    let new_tail = get_new_tail(&state.snake, distance);
+    let old_head = state.snake.last();
 }
