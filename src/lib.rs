@@ -1,5 +1,6 @@
 mod utils;
 
+use rand::seq::SliceRandom;
 use wasm_bindgen::prelude::*;
 use std::marker::Copy;
 
@@ -101,6 +102,13 @@ struct Config {
     initial_direction: Vector
 }
 
+enum Movement {
+    TOP,
+    RIGHT,
+    DOWN,
+    LEFT
+}
+
 static TOP:Vector = Vector { x: 0_f64, y: -1_f64 };
 static RIGHT:Vector = Vector { x: 1_f64, y: 0_f64 };
 static DOWN:Vector = Vector { x: 0_f64, y: 1_f64 };
@@ -123,13 +131,59 @@ fn get_segments_from_vectors(vectors: &Vec<Vector>) -> Vec<Segment> {
     segments
 }
 
-// fn get_food(width: i32, height: i32, snake: &Vec<Vector>) -> Vector {
-//     let mut all_positions: Vec<Vector> = Vec::new();
-//     for x in 0..width {
-//         for y in 0..height {
-//             all_positions.push(Vector::new(f64::from(x) + 0.5, f64::from(y) + 0.5));
-//         }
-//     }
-//     let segments = get_segments_from_vectors(snake);
-//     let free_positions = all_positions.iter().filter(|position| )
-// }
+fn get_food(width: i32, height: i32, snake: &Vec<Vector>) -> Vector {
+    let mut all_positions: Vec<Vector> = Vec::new();
+    for x in 0..width {
+        for y in 0..height {
+            all_positions.push(Vector::new(f64::from(x) + 0.5, f64::from(y) + 0.5));
+        }
+    }
+    let segments = get_segments_from_vectors(snake);
+    let free_positions = all_positions
+        .into_iter()
+        .filter(|point| segments.iter().any(|segment| !segment.is_point_inside(point)))
+        .collect::<Vec<Vector>>();
+
+    let t = free_positions.choose(&mut rand::thread_rng());
+    match t {
+        None => free_positions[0],
+        Some(p) => *p,
+    }
+}
+
+fn get_new_tail(old_snake: &Vec<Vector>, initial_distance: f64) -> Vec<Vector> {
+    let mut tail: Vec<Vector> = Vec::new();
+    let mut distance = initial_distance;
+    let end = old_snake.len() - 1;
+    for i in 0..end {
+        let point = old_snake[i];
+        if tail.len() != 0 {
+            tail.push(point);
+        } else {
+            let next = old_snake[i + 1];
+            let segment = Segment::new(&point, &next);
+            let length = segment.length();
+            if length >= distance {
+                let vector = segment.get_vector().normalize().scale_by(distance);
+                distance = 0_f64;
+                tail.push(point.add(&vector));
+            } else {
+                distance -= length;
+            }
+        }
+    }
+    tail
+}
+
+fn get_new_direction(old_direction: Vector, movement: Movement) -> Vector {
+    let new_direction = match movement {
+        Movement::TOP => TOP,
+        Movement::RIGHT => RIGHT,
+        Movement::DOWN => DOWN,
+        Movement::LEFT => LEFT
+    };
+    if old_direction.is_opposite(&new_direction) {
+        return old_direction
+    }
+    new_direction
+}
