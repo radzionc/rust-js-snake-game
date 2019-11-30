@@ -1,5 +1,6 @@
 mod utils;
 
+use js_sys::Array;
 use rand::Rng;
 use wasm_bindgen::prelude::*;
 use std::marker::Copy;
@@ -286,5 +287,9 @@ impl Game {
         let distance = self.speed * timespan;
         self.process_movement(movement, distance);
         self.process_food();
+    }
+
+    pub fn get_snake(&self) -> Array {
+        self.snake.clone().into_iter().map(JsValue::from).collect()
     }
 }
