@@ -17,11 +17,6 @@ extern {
 }
 
 #[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, wasm-snake-game!");
-}
-
-#[wasm_bindgen]
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
     pub x: f64,

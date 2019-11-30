@@ -21,63 +21,79 @@ const MOVEMENT_KEYS = {
 
 const STOP_KEY = 32
 
-// #region rendering
-const getContainer = () => document.getElementById('container')
+class View {
+  constructor(gameWidth, gameHeight) {
+    this.gameWidth = gameWidth
+    this.gameHeight = gameHeight
+    this.container = document.getElementById('container')
+    this.setUp()
 
-const getContainerSize = () => {
-  const { width, height } = getContainer().getBoundingClientRect()
-  return { width, height }
-}
-
-const clearContainer = () => {
-  const container = getContainer()
-  const [child] = container.children
-  if (child) {
-    container.removeChild(child)
+    window.addEventListener('resize', () => {
+      const [child] = this.container.children
+      if (child) {
+        this.container.removeChild(child)
+      }
+      this.setUp()
+    })
   }
-}
 
-const getContext = (width, height) => {
-  const [existing] = document.getElementsByTagName('canvas')
-  const canvas = existing || document.createElement('canvas')
-  if (!existing) {
-    getContainer().appendChild(canvas)
+  setUp() {
+    const { width, height } = this.container.getBoundingClientRect()
+    const widthRatio = width / this.gameWidth
+    const heightRatio = height / this.gameHeight
+    this.unitOnScreen = Math.min(widthRatio, heightRatio)
+    this.projectDistance = distance => distance * this.unitOnScreen
+    this.projectPosition = position => position.scale_by(this.unitOnScreen)
+
+    this.viewWidth = this.projectDistance(this.gameWidth)
+    this.viewHeight = this.projectDistance(this.gameHeight)
+    const canvas = document.createElement('canvas')
+    this.container.appendChild(canvas)
+    this.context = canvas.getContext('2d')
+    canvas.setAttribute('width', this.viewWidth)
+    canvas.setAttribute('height', this.viewHeight)
   }
-  const context = canvas.getContext('2d')
-  context.clearRect(0, 0, canvas.width, canvas.height)
-  canvas.setAttribute('width', width)
-  canvas.setAttribute('height', height)
-  return context
-}
 
-const renderCells = (context, cellSide, width, height) => {
-  context.globalAlpha = 0.2
-  getRange(width).forEach(column => getRange(height).forEach(row => {
-    if ((column + row) % 2 === 1) {
-      context.fillRect(column * cellSide, row * cellSide, cellSide, cellSide)
-    }
-  }))
-  context.globalAlpha = 1
-}
+  render(food, snake, score, bestScore) {
+    this.context.clearRect(0, 0, this.viewWidth, this.viewHeight)
+    this.context.globalAlpha = 0.2
+    getRange(this.gameWidth).forEach(column =>
+      getRange(this.gameHeight)
+      .filter(row => (column + row) % 2 === 1)
+      .forEach(row =>
+        this.context.fillRect(
+          column * this.unitOnScreen,
+          row * this.unitOnScreen,
+          this.unitOnScreen,
+          this.unitOnScreen
+        )
+      )
+    )
+    this.context.globalAlpha = 1
 
-const renderFood = (context, cellSide, { x, y }) => {
-  context.beginPath()
-  context.arc(x, y, cellSide / 2.5, 0, 2 * Math.PI)
-  context.fillStyle = '#e74c3c'
-  context.fill()
-}
+    const projectedFood = this.projectPosition(food)
+    this.context.beginPath()
+    this.context.arc(
+      projectedFood.x,
+      projectedFood.y,
+      this.unitOnScreen / 2.5,
+      0,
+      2 * Math.PI
+    )
+    this.context.fillStyle = '#e74c3c'
+    this.context.fill()
 
-const renderSnake = (context, cellSide, snake) => {
-  context.lineWidth = cellSide
-  context.strokeStyle = '#3498db'
-  context.beginPath()
-  snake.forEach(({ x, y }) => context.lineTo(x, y))
-  context.stroke()
-}
+    this.context.lineWidth = this.unitOnScreen
+    this.context.strokeStyle = '#3498db'
+    this.context.beginPath()
+    snake
+      .map(this.projectPosition)
+      .forEach(({ x, y }) => this.context.lineTo(x, y))
+    this.context.stroke()
 
-const renderScores = (score, bestScore) => {
-  document.getElementById('current-score').innerText = score
-  document.getElementById('best-score').innerText = bestScore
+    document.getElementById('current-score').innerText = score
+    document.getElementById('best-score').innerText = bestScore
+  }
 }
 
 class GameManager {
@@ -90,17 +106,7 @@ class GameManager {
       DEFAULT_GAME_CONFIG.initialDirection
     )
     this.bestScore = parseInt(localStorage.bestScore) || 0
-    this.containerSize = getContainerSize()
-    this.updateProjectors()
-  }
-
-  updateProjectors() {
-    const widthRatio = this.containerSize.width / this.game.width
-    const heightRatio = this.containerSize.height / this.game.height
-    const unitOnScreen = Math.min(widthRatio, heightRatio)
-
-    this.projectDistance = distance => distance * unitOnScreen,
-    this.projectPosition = position => position.scale_by(unitOnScreen)
+    this.view = new View(this.game.width, this.game.height)
   }
 
   tick() {
@@ -111,24 +117,14 @@ class GameManager {
         if (this.game.score > this.bestScore) {
           localStorage.setItem('bestScore', this.game.score)
           this.bestScore = this.game.score
-          return {
-            ...newProps,
-            bestScore: this.game.score
-          }
         }
       }
       this.lastUpdate = lastUpdate
-      this.render()
+      this.view.render(this.game.food, this.game.get_snake(), this.game.score, this.bestScore)
     }
   }
 
   run() {
-    window.addEventListener('resize', () => {
-      clearContainer()
-      this.containerSize = getContainerSize()
-      this.updateProjectors()
-      this.tick()
-    })
     window.addEventListener('keydown', ({ which }) => {
       this.movement = Object.keys(MOVEMENT_KEYS).find(key => MOVEMENT_KEYS[key].includes(which))
     })
@@ -136,7 +132,7 @@ class GameManager {
       this.movement = undefined
       if (which === STOP_KEY) {
         const now = Date.now()
-        if (state.stopTime) {
+        if (this.stopTime) {
           this.stopTime = undefined
           this.lastUpdate = this.time + now - this.lastUpdate
         } else {
@@ -145,16 +141,6 @@ class GameManager {
       }
     })
     setInterval(this.tick.bind(this), UPDATE_EVERY)
-  }
-
-  render() {
-    const [viewWidth, viewHeight] = [this.game.width, this.game.height].map(this.projectDistance)
-    const context = getContext(viewWidth, viewHeight)
-    const cellSide = viewWidth / this.game.width
-    renderCells(context, cellSide, this.game.width, this.game.height)
-    renderFood(context, cellSide, this.projectPosition(this.game.food))
-    renderSnake(context, cellSide, this.game.get_snake().map(this.projectPosition))
-    renderScores(this.game.score, this.bestScore)
   }
 }
 
