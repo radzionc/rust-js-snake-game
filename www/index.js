@@ -1,9 +1,6 @@
 import { Vector, Game, Movement } from "wasm-snake-game";
 
 const getRange = length => [...Array(length).keys()]
-const getWithoutLastElement = array => array.slice(0, array.length - 1)
-const areEqual = (one, another) => Math.abs(one - another) < 0.00000000001
-
 
 const DEFAULT_GAME_CONFIG = {
   width: 17,
@@ -40,17 +37,6 @@ const clearContainer = () => {
   }
 }
 
-const getProjectors = (containerSize, { width, height }) => {
-  const widthRatio = containerSize.width / width
-  const heightRatio = containerSize.height / height
-  const unitOnScreen = Math.min(widthRatio, heightRatio)
-
-  return {
-    projectDistance: distance => distance * unitOnScreen,
-    projectPosition: position => position.scale_by(unitOnScreen)
-  }
-}
-
 const getContext = (width, height) => {
   const [existing] = document.getElementsByTagName('canvas')
   const canvas = existing || document.createElement('canvas')
@@ -75,7 +61,6 @@ const renderCells = (context, cellSide, width, height) => {
 }
 
 const renderFood = (context, cellSide, { x, y }) => {
-  console.log(x, y)
   context.beginPath()
   context.arc(x, y, cellSide / 2.5, 0, 2 * Math.PI)
   context.fillStyle = '#e74c3c'
@@ -95,98 +80,83 @@ const renderScores = (score, bestScore) => {
   document.getElementById('best-score').innerText = bestScore
 }
 
-const render = (state) => {
-  const { game, bestScore, projectDistance, projectPosition } = state
-  const { width, height, food, snake, score } = game
-  const [viewWidth, viewHeight] = [width, height].map(projectDistance)
-  const context = getContext(viewWidth, viewHeight)
-  const cellSide = viewWidth / width
-  renderCells(context, cellSide, width, height)
-  renderFood(context, cellSide, projectPosition(food))
-  renderSnake(context, cellSide, snake.map(projectPosition))
-  renderScores(score, bestScore)
-}
-// #endregion
-
-// #region main
-const getInitialState = () => {
-  const game = new Game(
-    DEFAULT_GAME_CONFIG.width,
-    DEFAULT_GAME_CONFIG.height,
-    DEFAULT_GAME_CONFIG.speed,
-    DEFAULT_GAME_CONFIG.initialSnakeLength,
-    DEFAULT_GAME_CONFIG.initialDirection
-  )
-  const containerSize = getContainerSize()
-  return {
-    game,
-    bestScore: parseInt(localStorage.bestScore) || 0,
-    ...containerSize,
-    ...getProjectors(containerSize, game)
+class GameManager {
+  constructor() {
+    this.game = new Game(
+      DEFAULT_GAME_CONFIG.width,
+      DEFAULT_GAME_CONFIG.height,
+      DEFAULT_GAME_CONFIG.speed,
+      DEFAULT_GAME_CONFIG.initialSnakeLength,
+      DEFAULT_GAME_CONFIG.initialDirection
+    )
+    this.bestScore = parseInt(localStorage.bestScore) || 0
+    this.containerSize = getContainerSize()
+    this.updateProjectors()
   }
-}
 
-const getNewStatePropsOnTick = (oldState) => {
-  if (oldState.stopTime) return oldState
+  updateProjectors() {
+    const widthRatio = this.containerSize.width / this.game.width
+    const heightRatio = this.containerSize.height / this.game.height
+    const unitOnScreen = Math.min(widthRatio, heightRatio)
 
-  const lastUpdate = Date.now()
-  if (oldState.lastUpdate) {
-    oldState.game.process(oldState.movement, lastUpdate - oldState.lastUpdate)
-    const newProps = {
-      game,
-      lastUpdate
-    }
-    if (game.score > oldState.bestScore) {
-      localStorage.setItem('bestScore', game.score)
-      return {
-        ...newProps,
-        bestScore: game.score
+    this.projectDistance = distance => distance * unitOnScreen,
+    this.projectPosition = position => position.scale_by(unitOnScreen)
+  }
+
+  tick() {
+    if (!this.stopTime) {
+      const lastUpdate = Date.now()
+      if (this.lastUpdate) {
+        this.game.process(this.movement, lastUpdate - this.lastUpdate)
+        if (this.game.score > this.bestScore) {
+          localStorage.setItem('bestScore', this.game.score)
+          this.bestScore = this.game.score
+          return {
+            ...newProps,
+            bestScore: this.game.score
+          }
+        }
       }
+      this.lastUpdate = lastUpdate
+      this.render()
     }
-    return newProps
   }
 
-  return {
-    lastUpdate
-  }
-}
-
-const startGame = () => {
-  let state = getInitialState()
-  const updateState = props => {
-    state = { ...state, ...props }
-  }
-
-  window.addEventListener('resize', () => {
-    clearContainer()
-    const containerSize = getContainerSize()
-    updateState({ ...containerSize, ...getProjectors(containerSize, state.game) })
-    tick()
-  })
-  window.addEventListener('keydown', ({ which }) => {
-    const entries = Object.entries(MOVEMENT_KEYS)
-    const [movement] = entries.find(([, keys]) => keys.includes(which)) || [undefined]
-    updateState({ movement })
-  })
-  window.addEventListener('keyup', ({ which }) => {
-    updateState({ movement: undefined })
-    if (which === STOP_KEY) {
-      const now = Date.now()
-      if (state.stopTime) {
-        updateState({ stopTime: undefined, lastUpdate: state.time + now - state.lastUpdate })
-      } else {
-        updateState({ stopTime: now })
+  run() {
+    window.addEventListener('resize', () => {
+      clearContainer()
+      this.containerSize = getContainerSize()
+      this.updateProjectors()
+      this.tick()
+    })
+    window.addEventListener('keydown', ({ which }) => {
+      this.movement = Object.keys(MOVEMENT_KEYS).find(key => MOVEMENT_KEYS[key].includes(which))
+    })
+    window.addEventListener('keyup', ({ which }) => {
+      this.movement = undefined
+      if (which === STOP_KEY) {
+        const now = Date.now()
+        if (state.stopTime) {
+          this.stopTime = undefined
+          this.lastUpdate = this.time + now - this.lastUpdate
+        } else {
+          this.stopTime = now
+        }
       }
-    }
-  })
-
-  const tick = () => {
-    const newProps = getNewStatePropsOnTick(state)
-    updateState(newProps)
-    render(state)
+    })
+    setInterval(this.tick.bind(this), UPDATE_EVERY)
   }
-  setInterval(tick, UPDATE_EVERY)
-}
-// #endregion
 
-startGame()
+  render() {
+    const [viewWidth, viewHeight] = [this.game.width, this.game.height].map(this.projectDistance)
+    const context = getContext(viewWidth, viewHeight)
+    const cellSide = viewWidth / this.game.width
+    renderCells(context, cellSide, this.game.width, this.game.height)
+    renderFood(context, cellSide, this.projectPosition(this.game.food))
+    renderSnake(context, cellSide, this.game.get_snake().map(this.projectPosition))
+    renderScores(this.game.score, this.bestScore)
+  }
+}
+
+const gameManager = new GameManager()
+gameManager.run()
