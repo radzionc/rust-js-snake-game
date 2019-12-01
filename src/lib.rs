@@ -222,8 +222,8 @@ impl Game {
             let new_x_rounded = new_head.x.round();
             let new_y_rounded = new_head.y.round();
 
-            let rounded_x_changed = old_x_rounded != new_x_rounded;
-            let rounded_y_changed = old_y_rounded != new_y_rounded;
+            let rounded_x_changed = !are_equal(old_x_rounded, new_x_rounded);
+            let rounded_y_changed = !are_equal(old_y_rounded, new_y_rounded);
             
             if rounded_x_changed || rounded_y_changed {
                 let old = if rounded_x_changed { old_x } else { old_y };
@@ -239,11 +239,16 @@ impl Game {
                 new_snake.push(breakpoint);
                 new_snake.push(head);
                 self.snake = new_snake;
+            } else {
+                let mut new_snake: Vec<Vector> = new_tail.clone();
+                new_snake.push(new_head);
+                self.snake = new_snake;
             }
+        } else {
+            let mut new_snake: Vec<Vector> = new_tail.clone();
+            new_snake.push(new_head);
+            self.snake = new_snake;
         }
-        let mut new_snake: Vec<Vector> = new_tail.clone();
-        new_snake.push(new_head);
-        self.snake = new_snake;
     }
     
     fn process_food(&mut self) {

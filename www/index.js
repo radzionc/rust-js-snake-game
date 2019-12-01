@@ -105,9 +105,6 @@ class GameManager {
       DEFAULT_GAME_CONFIG.initialSnakeLength,
       DEFAULT_GAME_CONFIG.initialDirection
     )
-    const one = new Vector(0, 1)
-    const another = new Vector(0, -1)
-    console.log(one.add(another), one.is_opposite(another))
     this.bestScore = parseInt(localStorage.bestScore) || 0
     this.view = new View(this.game.width, this.game.height)
   }
