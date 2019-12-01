@@ -202,11 +202,14 @@ impl Game {
             score: 0
         }
     }
-    fn process_movement(&mut self, movement: Movement, distance: f64) {
+    fn process_movement(&mut self, distance: f64, movement: Option<Movement>) {
         let new_tail = get_new_tail(&self.snake, distance);
         let old_head = self.snake.last().unwrap();
         let new_head = old_head.add(&self.direction.scale_by(distance));
-        let new_direction = get_new_direction(self.direction, movement);
+        let new_direction = match movement {
+            None => self.direction,
+            Some(m) => get_new_direction(self.direction, m)
+        };
         if !self.direction.equal_to(&new_direction) {
             let old_x = old_head.x;
             let old_y = old_head.y;
@@ -278,9 +281,9 @@ impl Game {
         return false
     }
 
-    pub fn process(&mut self, movement: Movement, timespan: f64) {
+    pub fn process(&mut self, timespan: f64, movement: Option<Movement>) {
         let distance = self.speed * timespan;
-        self.process_movement(movement, distance);
+        self.process_movement(distance, movement);
         self.process_food();
     }
 

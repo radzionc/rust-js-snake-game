@@ -113,7 +113,7 @@ class GameManager {
     if (!this.stopTime) {
       const lastUpdate = Date.now()
       if (this.lastUpdate) {
-        this.game.process(this.movement, lastUpdate - this.lastUpdate)
+        this.game.process(lastUpdate - this.lastUpdate, this.movement)
         if (this.game.score > this.bestScore) {
           localStorage.setItem('bestScore', this.game.score)
           this.bestScore = this.game.score
