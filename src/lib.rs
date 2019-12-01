@@ -23,6 +23,11 @@ pub struct Vector {
     pub y: f64
 }
 
+fn are_equal(one: f64, another: f64) -> bool {
+    let epsilon = 0.0000001;
+    (one - another).abs() < epsilon
+}
+
 #[wasm_bindgen]
 impl Vector {
     #[wasm_bindgen(constructor)]
@@ -30,15 +35,15 @@ impl Vector {
         Vector { x, y }
     }
     pub fn subtract(&self, other: &Vector) -> Vector {
-        Vector { x: self.x - other.x, y: self.y - other.y }
+        Vector::new(self.x - other.x, self.y - other.y)
     }
 
     pub fn add(&self, other: &Vector) -> Vector {
-        Vector { x: self.x + other.x, y: self.y + other.y }
+        Vector::new(self.x + other.x, self.y + other.y)
     }
 
     pub fn scale_by(&self, number: f64) -> Vector {
-        Vector { x: self.x * number, y: self.y * number }
+        Vector::new(self.x * number, self.y * number)
     }
 
     pub fn length(&self) -> f64 {
@@ -51,11 +56,11 @@ impl Vector {
 
     pub fn is_opposite(&self, other: &Vector) -> bool {
         let sum = self.add(other);
-        self.x == sum.x && self.y == sum.y
+        are_equal(sum.x, 0_f64) && are_equal(sum.y, 0_f64)
     }
 
     pub fn equal_to(&self, other: &Vector) -> bool {
-        self.x == other.x && self.y == other.y
+        are_equal(self.x, other.x) && are_equal(self.y, other.y)
     }
 }
 
@@ -80,7 +85,7 @@ impl<'a> Segment<'a> {
     pub fn is_point_inside(&self, point: &Vector) -> bool {
         let first = Segment::new(self.start, point);
         let second = Segment::new(point, self.end);
-        self.length() == first.length() + second.length()
+        are_equal(self.length(), first.length() + second.length())
     }
 
     pub fn get_projected_point(&self, point: &Vector) -> Vector {
@@ -131,8 +136,7 @@ fn get_food(width: i32, height: i32, snake: &Vec<Vector>) -> Vector {
 fn get_new_tail(old_snake: &Vec<Vector>, initial_distance: f64) -> Vec<Vector> {
     let mut tail: Vec<Vector> = Vec::new();
     let mut distance = initial_distance;
-    let end = old_snake.len() - 1;
-    for i in 0..end {
+    for i in 0..old_snake.len() - 1 {
         let point = old_snake[i];
         if tail.len() != 0 {
             tail.push(point);
