@@ -267,7 +267,7 @@ impl Game {
         }
     }
 
-    pub fn is_game_over(&self) -> bool {
+    pub fn is_over(&self) -> bool {
         let last = self.snake.last().unwrap();
         if last.x < 0_f64 || last.x > f64::from(self.width) || last.y < 0_f64  || last.y > f64::from(self.height) {
             return true
