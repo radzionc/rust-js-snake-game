@@ -1,10 +1,11 @@
 const getRange = length => [...Array(length).keys()]
 
 export class View {
-  constructor(gameWidth, gameHeight) {
+  constructor(gameWidth, gameHeight, onViewChange = () => {}) {
     this.gameWidth = gameWidth
     this.gameHeight = gameHeight
     this.container = document.getElementById('container')
+    this.onViewChange = onViewChange
     this.setUp()
 
     window.addEventListener('resize', () => {
@@ -13,28 +14,34 @@ export class View {
         this.container.removeChild(child)
       }
       this.setUp()
+      this.onViewChange()
     })
   }
 
   setUp() {
     const { width, height } = this.container.getBoundingClientRect()
-    const widthRatio = width / this.gameWidth
-    const heightRatio = height / this.gameHeight
-    this.unitOnScreen = Math.min(widthRatio, heightRatio)
+    this.unitOnScreen = Math.min(
+      width / this.gameWidth,
+      height / this.gameHeight
+    )
     this.projectDistance = distance => distance * this.unitOnScreen
     this.projectPosition = position => position.scale_by(this.unitOnScreen)
 
-    this.viewWidth = this.projectDistance(this.gameWidth)
-    this.viewHeight = this.projectDistance(this.gameHeight)
     const canvas = document.createElement('canvas')
     this.container.appendChild(canvas)
     this.context = canvas.getContext('2d')
-    canvas.setAttribute('width', this.viewWidth)
-    canvas.setAttribute('height', this.viewHeight)
+    canvas.setAttribute('width', this.projectDistance(this.gameWidth))
+    canvas.setAttribute('height', this.projectDistance(this.gameHeight))
   }
 
   render(food, snake, score, bestScore) {
-    this.context.clearRect(0, 0, this.viewWidth, this.viewHeight)
+    this.context.clearRect(
+      0,
+      0,
+      this.context.canvas.width,
+      this.context.canvas.height
+    )
+    
     this.context.globalAlpha = 0.2
     this.context.fillStyle = 'black'
     getRange(this.gameWidth).forEach(column =>

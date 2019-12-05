@@ -16,7 +16,11 @@ export class GameManager {
   constructor() {
     this.restart()
     this.bestScore = parseInt(localStorage.bestScore) || 0
-    this.view = new View(this.game.width, this.game.height)
+    this.view = new View(
+      this.game.width,
+      this.game.height,
+      this.render.bind(this)
+    )
   }
 
   restart() {
@@ -30,6 +34,15 @@ export class GameManager {
     this.lastUpdate = undefined
     this.stopTime = undefined
     this.movement = undefined
+  }
+
+  render() {
+    this.view.render(
+      this.game.food,
+      this.game.get_snake(),
+      this.game.score,
+      this.bestScore
+    )
   }
 
   tick() {
@@ -47,7 +60,7 @@ export class GameManager {
         }
       }
       this.lastUpdate = lastUpdate
-      this.view.render(this.game.food, this.game.get_snake(), this.game.score, this.bestScore)
+      this.render()
     }
   }
 
