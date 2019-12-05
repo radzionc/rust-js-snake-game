@@ -1,14 +1,13 @@
-import { Vector, Game } from "wasm-snake-game";
+import { Game, Vector } from "wasm-snake-game";
 
 import { View } from './view'
 import { Controller } from './controller'
-
-const UPDATE_EVERY = 1000 / 60
+import CONFIG from './config'
+import Storage from './storage'
 
 export class GameManager {
   constructor() {
     this.restart()
-    this.bestScore = parseInt(localStorage.bestScore) || 0
     this.view = new View(
       this.game.width,
       this.game.height,
@@ -31,11 +30,14 @@ export class GameManager {
 
   restart() {
     this.game = new Game(
-      17,
-      15,
-      0.006,
-      3,
-      new Vector(1, 0)
+      CONFIG.WIDTH,
+      CONFIG.HEIGHT,
+      CONFIG.SPEED,
+      CONFIG.SNAKE_LENGTH,
+      new Vector(
+        CONFIG.SNAKE_DIRECTION_X,
+        CONFIG.SNAKE_DIRECTION_Y
+      )
     )
     this.lastUpdate = undefined
     this.stopTime = undefined
@@ -46,7 +48,7 @@ export class GameManager {
       this.game.food,
       this.game.get_snake(),
       this.game.score,
-      this.bestScore
+      Storage.getBestScore()
     )
   }
 
@@ -59,9 +61,9 @@ export class GameManager {
           this.restart()
           return
         }
-        if (this.game.score > this.bestScore) {
+        if (this.game.score > Storage.getBestScore()) {
           localStorage.setItem('bestScore', this.game.score)
-          this.bestScore = this.game.score
+          Storage.setBestScore(this.game.score)
         }
       }
       this.lastUpdate = lastUpdate
@@ -70,6 +72,6 @@ export class GameManager {
   }
 
   run() {
-    setInterval(this.tick.bind(this), UPDATE_EVERY)
+    setInterval(this.tick.bind(this), 1000 / CONFIG.FPS)
   }
 }
