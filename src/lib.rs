@@ -58,6 +58,10 @@ impl Vector {
     pub fn equal_to(&self, other: &Vector) -> bool {
         are_equal(self.x, other.x) && are_equal(self.y, other.y)
     }
+
+    pub fn dot_product(&self, other: &Vector) -> f64 {
+        self.x * other.x + self.y * other.y
+    }
 }
 
 pub struct Segment<'a> {
@@ -86,8 +90,10 @@ impl<'a> Segment<'a> {
 
     pub fn get_projected_point(&self, point: &Vector) -> Vector {
         let vector = self.get_vector();
-        let u = ((point.x - self.start.x) * vector.x + (point.y - self.start.y) * vector.y) / (vector.x * vector.x + vector.y * vector.y);
-        Vector::new(self.start.x + u * vector.x, self.start.y + u * vector.y)
+        let diff = point.subtract(&self.start);
+        let u = diff.dot_product(&vector) / vector.dot_product(&vector);
+        let scaled = vector.scale_by(u);
+        self.start.add(&scaled)
     }
 }
 
