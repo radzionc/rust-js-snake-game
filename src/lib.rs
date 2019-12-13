@@ -11,21 +11,17 @@ use std::marker::Copy;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[wasm_bindgen]
-extern {
-    fn alert(s: &str);
+static EPSILON:f64 = 0.0000001;
+
+fn are_equal(one: f64, another: f64) -> bool {
+    (one - another).abs() < EPSILON
 }
 
 #[wasm_bindgen]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct Vector {
     pub x: f64,
     pub y: f64
-}
-
-fn are_equal(one: f64, another: f64) -> bool {
-    let epsilon = 0.0000001;
-    (one - another).abs() < epsilon
 }
 
 #[wasm_bindgen]
@@ -56,7 +52,7 @@ impl Vector {
 
     pub fn is_opposite(&self, other: &Vector) -> bool {
         let sum = self.add(other);
-        are_equal(sum.x, 0_f64) && are_equal(sum.y, 0_f64)
+        sum.equal_to(&Vector::new(0_f64, 0_f64))
     }
 
     pub fn equal_to(&self, other: &Vector) -> bool {
@@ -103,11 +99,6 @@ pub enum Movement {
     LEFT
 }
 
-static TOP:Vector = Vector { x: 0_f64, y: -1_f64 };
-static RIGHT:Vector = Vector { x: 1_f64, y: 0_f64 };
-static DOWN:Vector = Vector { x: 0_f64, y: 1_f64 };
-static LEFT:Vector = Vector { x: -1_f64, y: 0_f64 };
-
 fn get_segments_from_vectors(vectors: &[Vector]) -> Vec<Segment> {
     let before_last = vectors.len() - 1;
     let mut segments:Vec<Segment> = Vec::new();
@@ -125,48 +116,12 @@ fn get_food(width: i32, height: i32, snake: &Vec<Vector>) -> Vector {
         }
     }
     let segments = get_segments_from_vectors(snake);
-    let free_positions = all_positions
+    let mut free_positions = all_positions
         .into_iter()
         .filter(|point| segments.iter().any(|segment| !segment.is_point_inside(point)))
         .collect::<Vec<Vector>>();
     let index = rand::thread_rng().gen_range(0, free_positions.len());
-    free_positions[index]
-}
-
-fn get_new_tail(old_snake: &Vec<Vector>, initial_distance: f64) -> Vec<Vector> {
-    let mut tail: Vec<Vector> = Vec::new();
-    let mut distance = initial_distance;
-    for i in 0..old_snake.len() - 1 {
-        let point = old_snake[i];
-        if tail.len() != 0 {
-            tail.push(point);
-        } else {
-            let next = old_snake[i + 1];
-            let segment = Segment::new(&point, &next);
-            let length = segment.length();
-            if length >= distance {
-                let vector = segment.get_vector().normalize().scale_by(distance);
-                distance = 0_f64;
-                tail.push(point.add(&vector));
-            } else {
-                distance -= length;
-            }
-        }
-    }
-    tail
-}
-
-fn get_new_direction(old_direction: Vector, movement: Movement) -> Vector {
-    let new_direction = match movement {
-        Movement::TOP => TOP,
-        Movement::RIGHT => RIGHT,
-        Movement::DOWN => DOWN,
-        Movement::LEFT => LEFT
-    };
-    if old_direction.is_opposite(&new_direction) {
-        return old_direction
-    }
-    new_direction
+    free_positions.remove(index)
 }
 
 #[wasm_bindgen]
@@ -206,49 +161,64 @@ impl Game {
             score: 0
         }
     }
-    fn process_movement(&mut self, distance: f64, movement: Option<Movement>) {
-        let new_tail = get_new_tail(&self.snake, distance);
-        let old_head = self.snake.last().unwrap();
-        let new_head = old_head.add(&self.direction.scale_by(distance));
-        let new_direction = match movement {
-            None => self.direction,
-            Some(m) => get_new_direction(self.direction, m)
-        };
-        if !self.direction.equal_to(&new_direction) {
-            let old_x = old_head.x;
-            let old_y = old_head.y;
-            let old_x_rounded = old_x.round();
-            let old_y_rounded = old_y.round();
-            let new_x_rounded = new_head.x.round();
-            let new_y_rounded = new_head.y.round();
-
-            let rounded_x_changed = !are_equal(old_x_rounded, new_x_rounded);
-            let rounded_y_changed = !are_equal(old_y_rounded, new_y_rounded);
-            
-            if rounded_x_changed || rounded_y_changed {
-                let old = if rounded_x_changed { old_x } else { old_y };
-                let old_rounded = if rounded_x_changed { old_x_rounded } else { old_y_rounded };
-                let new_rounded = if rounded_x_changed { new_x_rounded } else { new_y_rounded };
-                let breakpoint_component = old_rounded + (if new_rounded > old_rounded { 0.5_f64 } else { -0.5_f64 });
-                let breakpoint = if rounded_x_changed { Vector::new(breakpoint_component, old_y) } else { Vector::new(old_x, breakpoint_component) };
-                let vector = new_direction.scale_by(distance - (old - breakpoint_component).abs());
-                let head = breakpoint.add(&vector);
-
-                self.direction = new_direction;
-                let mut new_snake: Vec<Vector> = new_tail.clone();
-                new_snake.push(breakpoint);
-                new_snake.push(head);
-                self.snake = new_snake;
+    fn process_movement(&mut self, timespan: f64, movement: Option<Movement>) {
+        let distance = self.speed * timespan;
+        
+        let mut tail: Vec<Vector> = Vec::new();
+        let mut snake_distance = distance;
+        while self.snake.len() > 1 {
+            let point = self.snake.remove(0);
+            let next = &self.snake[0];
+            let segment = Segment::new(&point, next);
+            let length = segment.length();
+            if length >= snake_distance {
+                let vector = segment.get_vector().normalize().scale_by(snake_distance);
+                tail.push(point.add(&vector));
+                break
             } else {
-                let mut new_snake: Vec<Vector> = new_tail.clone();
-                new_snake.push(new_head);
-                self.snake = new_snake;
+                snake_distance -= length;
             }
-        } else {
-            let mut new_snake: Vec<Vector> = new_tail.clone();
-            new_snake.push(new_head);
-            self.snake = new_snake;
         }
+        tail.append(&mut self.snake);
+        self.snake = tail;
+        
+        let old_head = self.snake.pop().unwrap();
+        let new_head = old_head.add(&self.direction.scale_by(distance));
+        if movement.is_some() {
+            let new_direction = match movement.unwrap() {
+                Movement::TOP => Vector { x: 0_f64, y: -1_f64 },
+                Movement::RIGHT => Vector { x: 1_f64, y: 0_f64 },
+                Movement::DOWN => Vector { x: 0_f64, y: 1_f64 },
+                Movement::LEFT => Vector { x: -1_f64, y: 0_f64 }
+            };
+            if !self.direction.is_opposite(&new_direction) && !self.direction.equal_to(&new_direction) {
+                self.direction = new_direction;
+                let old_x = old_head.x;
+                let old_y = old_head.y;
+                let old_x_rounded = old_x.round();
+                let old_y_rounded = old_y.round();
+                let new_x_rounded = new_head.x.round();
+                let new_y_rounded = new_head.y.round();
+
+                let rounded_x_changed = !are_equal(old_x_rounded, new_x_rounded);
+                let rounded_y_changed = !are_equal(old_y_rounded, new_y_rounded);
+                
+                if rounded_x_changed || rounded_y_changed {
+                    let old = if rounded_x_changed { old_x } else { old_y };
+                    let old_rounded = if rounded_x_changed { old_x_rounded } else { old_y_rounded };
+                    let new_rounded = if rounded_x_changed { new_x_rounded } else { new_y_rounded };
+                    let breakpoint_component = old_rounded + (if new_rounded > old_rounded { 0.5_f64 } else { -0.5_f64 });
+                    let breakpoint = if rounded_x_changed { Vector::new(breakpoint_component, old_y) } else { Vector::new(old_x, breakpoint_component) };
+                    let vector = self.direction.scale_by(distance - (old - breakpoint_component).abs());
+                    let head = breakpoint.add(&vector);
+
+                    self.snake.push(breakpoint);
+                    self.snake.push(head);
+                    return
+                }
+            }
+        }
+        self.snake.push(new_head);
     }
     
     fn process_food(&mut self) {
@@ -257,9 +227,9 @@ impl Game {
             &self.snake[self.snake.len() - 1]
         );
         if head_segment.is_point_inside(&self.food) {
-            let tail_end = self.snake[0];
-            let before_tail_end = self.snake[1];
-            let tail_segment = Segment::new(&before_tail_end, &tail_end);
+            let tail_end = &self.snake[0];
+            let before_tail_end = &self.snake[1];
+            let tail_segment = Segment::new(before_tail_end, &tail_end);
             let new_tail_end = tail_end.add(&tail_segment.get_vector().normalize());
             self.snake[0] = new_tail_end;
             self.food = get_food(self.width, self.height, &self.snake);
@@ -291,8 +261,7 @@ impl Game {
     }
 
     pub fn process(&mut self, timespan: f64, movement: Option<Movement>) {
-        let distance = self.speed * timespan;
-        self.process_movement(distance, movement);
+        self.process_movement(timespan, movement);
         self.process_food();
     }
 
