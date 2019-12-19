@@ -107,24 +107,22 @@ pub enum Movement {
 
 fn get_segments_from_vectors(vectors: &[Vector]) -> Vec<Segment> {
     let pairs = vectors[..vectors.len() -1].iter().zip(&vectors[1..]);
-    let segments: Vec<Segment> = pairs.map(|(s, e)| Segment::new(s, e)).collect();
-    segments
+    pairs.map(|(s, e)| Segment::new(s, e)).collect::<Vec<Segment>>()
 }
 
 fn get_food(width: i32, height: i32, snake: &[Vector]) -> Vector {
-    let mut all_positions: Vec<Vector> = Vec::new();
+    let segments = get_segments_from_vectors(snake);
+    let mut free_positions: Vec<Vector> = Vec::new();
     for x in 0..width {
         for y in 0..height {
-            all_positions.push(Vector::new(f64::from(x) + 0.5, f64::from(y) + 0.5));
+            let point = Vector::new(f64::from(x) + 0.5, f64::from(y) + 0.5);
+            if segments.iter().all(|s| !s.is_point_inside(&point)) {
+                free_positions.push(point)
+            }
         }
     }
-    let segments = get_segments_from_vectors(snake);
-    let mut free_positions = all_positions
-        .into_iter()
-        .filter(|point| segments.iter().any(|segment| !segment.is_point_inside(point)))
-        .collect::<Vec<Vector>>();
     let index = rand::thread_rng().gen_range(0, free_positions.len());
-    free_positions.remove(index)
+    free_positions[index]
 }
 
 #[wasm_bindgen]
