@@ -106,15 +106,12 @@ pub enum Movement {
 }
 
 fn get_segments_from_vectors(vectors: &[Vector]) -> Vec<Segment> {
-    let before_last = vectors.len() - 1;
-    let mut segments:Vec<Segment> = Vec::new();
-    for i in 0..before_last {
-        segments.push(Segment::new(&vectors[i], &vectors[i + 1]));
-    }
+    let pairs = vectors[..vectors.len() -1].iter().zip(&vectors[1..]);
+    let segments: Vec<Segment> = pairs.map(|(s, e)| Segment::new(s, e)).collect();
     segments
 }
 
-fn get_food(width: i32, height: i32, snake: &Vec<Vector>) -> Vector {
+fn get_food(width: i32, height: i32, snake: &[Vector]) -> Vector {
     let mut all_positions: Vec<Vector> = Vec::new();
     for x in 0..width {
         for y in 0..height {
