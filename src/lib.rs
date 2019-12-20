@@ -165,6 +165,7 @@ impl Game {
             score: 0
         }
     }
+
     fn process_movement(&mut self, timespan: f64, movement: Option<Movement>) {
         let distance = self.speed * timespan;
         
@@ -226,15 +227,19 @@ impl Game {
     }
     
     fn process_food(&mut self) {
+        let snake_len = self.snake.len();
         let head_segment = Segment::new(
-            &self.snake[self.snake.len() - 2],
-            &self.snake[self.snake.len() - 1]
+            &self.snake[snake_len - 2],
+            &self.snake[snake_len - 1]
         );
+
         if head_segment.is_point_inside(&self.food) {
             let tail_end = &self.snake[0];
             let before_tail_end = &self.snake[1];
             let tail_segment = Segment::new(before_tail_end, &tail_end);
-            let new_tail_end = tail_end.add(&tail_segment.get_vector().normalize());
+            let new_tail_end = tail_end.add(
+                &tail_segment.get_vector().normalize()
+            );
             self.snake[0] = new_tail_end;
             self.food = get_food(self.width, self.height, &self.snake);
             self.score += 1;
