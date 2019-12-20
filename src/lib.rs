@@ -146,12 +146,15 @@ impl Game {
         snake_length: i32,
         direction: Vector
     ) -> Game {
-        let head = Vector::new((f64::from(width) / 2_f64).round() - 0.5, (f64::from(height) / 2_f64).round() - 0.5);
-        let tailtip = head.subtract(&direction.scale_by(f64::from(snake_length)));
-        let mut snake: Vec<Vector> = Vec::new();
-        snake.push(tailtip);
-        snake.push(head);
+        let head_x = (f64::from(width) / 2_f64).round() - 0.5;
+        let head_y = (f64::from(height) / 2_f64).round() - 0.5;
+        let head = Vector::new(head_x, head_y);
+        let tailtip = head.subtract(
+            &direction.scale_by(f64::from(snake_length))
+        );
+        let snake = vec![tailtip, head];
         let food = get_food(width, height, &snake);
+
         Game {
             width: width,
             height: height,
