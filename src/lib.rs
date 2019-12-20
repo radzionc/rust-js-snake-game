@@ -247,26 +247,21 @@ impl Game {
     }
 
     pub fn is_over(&self) -> bool {
-        let last = self.snake.last().unwrap();
-        if last.x < 0_f64 || last.x > f64::from(self.width) || last.y < 0_f64  || last.y > f64::from(self.height) {
+        let snake_len = self.snake.len();
+        let last = self.snake[snake_len - 1];
+        let Vector { x, y } = last;
+        if x < 0_f64 || x > f64::from(self.width) || y < 0_f64 || y > f64::from(self.height) {
             return true
         }
-        if self.snake.len() < 5 {
+        if snake_len < 5 {
             return false
         }
 
-        let points_for_segments = &self.snake[..self.snake.len() - 3];
-        let segments = get_segments_from_vectors(points_for_segments);
-        for segment in segments {
+        let segments = get_segments_from_vectors(&self.snake[..snake_len - 3]);
+        return segments.iter().any(|segment| {
             let projected = segment.get_projected_point(&last);
-            if segment.is_point_inside(&projected) {
-                let distance = Segment::new(&last, &projected).length();
-                if distance < 0.5 {
-                    return true
-                }
-            }
-        }
-        return false
+            segment.is_point_inside(&projected) && Segment::new(&last, &projected).length() < 0.5
+        })
     }
 
     pub fn process(&mut self, timespan: f64, movement: Option<Movement>) {
