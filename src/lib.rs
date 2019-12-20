@@ -197,8 +197,7 @@ impl Game {
                 Movement::LEFT => Vector { x: -1_f64, y: 0_f64 }
             };
             if !self.direction.is_opposite(&new_direction) && !self.direction.equal_to(&new_direction) {
-                let old_x = old_head.x;
-                let old_y = old_head.y;
+                let Vector { x: old_x, y: old_y } = old_head;
                 let old_x_rounded = old_x.round();
                 let old_y_rounded = old_y.round();
                 let new_x_rounded = new_head.x.round();
@@ -208,9 +207,9 @@ impl Game {
                 let rounded_y_changed = !are_equal(old_y_rounded, new_y_rounded);
                 
                 if rounded_x_changed || rounded_y_changed {
-                    let old = if rounded_x_changed { old_x } else { old_y };
-                    let old_rounded = if rounded_x_changed { old_x_rounded } else { old_y_rounded };
-                    let new_rounded = if rounded_x_changed { new_x_rounded } else { new_y_rounded };
+                    let (old, old_rounded, new_rounded) =
+                        if rounded_x_changed {(old_x, old_x_rounded, new_x_rounded)}
+                        else {(old_y, old_y_rounded, new_y_rounded)};
                     let breakpoint_component = old_rounded + (if new_rounded > old_rounded { 0.5_f64 } else { -0.5_f64 });
                     let breakpoint = if rounded_x_changed { Vector::new(breakpoint_component, old_y) } else { Vector::new(old_x, breakpoint_component) };
                     let vector = new_direction.scale_by(distance - (old - breakpoint_component).abs());
