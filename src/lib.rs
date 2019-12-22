@@ -143,6 +143,7 @@ pub struct Game {
 impl Game {
     #[wasm_bindgen(constructor)]
     pub fn new(width: i32, height: i32, speed: f64, snake_length: i32, direction: Vector) -> Game {
+        utils::set_panic_hook();
         let head_x = (f64::from(width) / 2_f64).round() - 0.5;
         let head_y = (f64::from(height) / 2_f64).round() - 0.5;
         let head = Vector::new(head_x, head_y);
