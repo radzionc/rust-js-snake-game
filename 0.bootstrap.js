@@ -54,7 +54,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _src
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = ({\n  WIDTH: 27,\n  HEIGHT: 15,\n  SPEED: 0.006,\n  SNAKE_LENGTH: 3,\n  SNAKE_DIRECTION_X: 1,\n  SNAKE_DIRECTION_Y: 0,\n  FPS: 60\n});\n\n//# sourceURL=webpack:///./src/config.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = ({\n  WIDTH: 17,\n  HEIGHT: 15,\n  SPEED: 0.006,\n  SNAKE_LENGTH: 3,\n  SNAKE_DIRECTION_X: 1,\n  SNAKE_DIRECTION_Y: 0,\n  FPS: 60\n});\n\n//# sourceURL=webpack:///./src/config.js?");
 
 /***/ }),
 
