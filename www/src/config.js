@@ -1,5 +1,5 @@
 export default {
-  WIDTH: 27,
+  WIDTH: 17,
   HEIGHT: 15,
   SPEED: 0.006,
   SNAKE_LENGTH: 3,
