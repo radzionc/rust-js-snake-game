@@ -37,7 +37,16 @@ export class GameManager {
     )
   }
 
-  run() {
+  tick() {
+    const lastUpdate = Date.now()
+    if (this.lastUpdate) {
+      this.game.process(lastUpdate - this.lastUpdate)
+    }
+    this.lastUpdate = lastUpdate
     this.render()
+  }
+
+  run() {
+    setInterval(this.tick.bind(this), 1000 / CONFIG.FPS)
   }
 }
