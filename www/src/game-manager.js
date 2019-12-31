@@ -29,7 +29,8 @@ export class GameManager {
         CONFIG.SNAKE_DIRECTION_Y
       )
     )
-    console.log(this.game)
+    this.lastUpdate = undefined
+    this.stopTime = undefined
   }
 
   onStop() {
@@ -56,6 +57,10 @@ export class GameManager {
       const lastUpdate = Date.now()
       if (this.lastUpdate) {
         this.game.process(lastUpdate - this.lastUpdate, this.controller.movement)
+        if (this.game.is_over()) {
+          this.restart()
+          return
+        }
         if (this.game.score > Storage.getBestScore()) {
           localStorage.setItem('bestScore', this.game.score)
           Storage.setBestScore(this.game.score)
