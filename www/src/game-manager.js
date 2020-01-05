@@ -62,7 +62,6 @@ export class GameManager {
           return
         }
         if (this.game.score > Storage.getBestScore()) {
-          localStorage.setItem('bestScore', this.game.score)
           Storage.setBestScore(this.game.score)
         }
       }
