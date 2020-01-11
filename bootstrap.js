@@ -52,53 +52,47 @@
 /******/ 	function promiseResolve() { return Promise.resolve(); }
 /******/
 /******/ 	var wasmImportObjects = {
-/******/ 		"../pkg/wasm_snake_game_bg.wasm": function() {
+/******/ 		"../pkg/rust_js_snake_game_bg.wasm": function() {
 /******/ 			return {
-/******/ 				"./wasm_snake_game.js": {
+/******/ 				"./rust_js_snake_game.js": {
+/******/ 					"__wbg_alert_300f1c634d02c7e5": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_alert_300f1c634d02c7e5"](p0i32,p1i32);
+/******/ 					},
 /******/ 					"__wbg_vector_new": function(p0i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_vector_new"](p0i32);
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_vector_new"](p0i32);
 /******/ 					},
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbindgen_object_drop_ref"](p0i32);
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					},
-/******/ 					"__wbg_new_59cb74e423758ede": function() {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_new_59cb74e423758ede"]();
+/******/ 					"__wbg_new_4fee7e2900033464": function() {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_new_4fee7e2900033464"]();
 /******/ 					},
-/******/ 					"__wbg_stack_558ba5917b466edd": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_stack_558ba5917b466edd"](p0i32,p1i32);
-/******/ 					},
-/******/ 					"__wbg_error_4bb6c2a97407129a": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_error_4bb6c2a97407129a"](p0i32,p1i32);
-/******/ 					},
-/******/ 					"__wbg_self_1801c027cb0e6124": function() {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_self_1801c027cb0e6124"]();
-/******/ 					},
-/******/ 					"__wbg_require_e89d842e759f0a4c": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_require_e89d842e759f0a4c"](p0i32,p1i32);
-/******/ 					},
-/******/ 					"__wbg_crypto_3e91f24788b1203d": function(p0i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_crypto_3e91f24788b1203d"](p0i32);
+/******/ 					"__wbg_push_ba9b5e3c25cff8f9": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_push_ba9b5e3c25cff8f9"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbindgen_is_undefined": function(p0i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbindgen_is_undefined"](p0i32);
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbindgen_is_undefined"](p0i32);
 /******/ 					},
-/******/ 					"__wbg_getRandomValues_7ecea3ecacbb2f9e": function(p0i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_getRandomValues_7ecea3ecacbb2f9e"](p0i32);
+/******/ 					"__wbg_randomFillSync_eabbc18af655bfbe": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_randomFillSync_eabbc18af655bfbe"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbg_getRandomValues_f724b5822126eff7": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_getRandomValues_f724b5822126eff7"](p0i32,p1i32,p2i32);
+/******/ 					"__wbg_getRandomValues_40ceff860009fa55": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_getRandomValues_40ceff860009fa55"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbg_randomFillSync_eae3007264ffc138": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_randomFillSync_eae3007264ffc138"](p0i32,p1i32,p2i32);
+/******/ 					"__wbg_self_e70540c4956ad879": function() {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_self_e70540c4956ad879"]();
 /******/ 					},
-/******/ 					"__wbg_new_4c05543d9a828faa": function() {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_new_4c05543d9a828faa"]();
+/******/ 					"__wbg_require_9edeecb69c9dc31c": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_require_9edeecb69c9dc31c"](p0i32,p1i32);
 /******/ 					},
-/******/ 					"__wbg_push_824125b1a41666b9": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbg_push_824125b1a41666b9"](p0i32,p1i32);
+/******/ 					"__wbg_crypto_58b0c631995fea92": function(p0i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_crypto_58b0c631995fea92"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_getRandomValues_532ec62d8e780edc": function(p0i32) {
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbg_getRandomValues_532ec62d8e780edc"](p0i32);
 /******/ 					},
 /******/ 					"__wbindgen_throw": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/wasm_snake_game.js"].exports["__wbindgen_throw"](p0i32,p1i32);
+/******/ 						return installedModules["../pkg/rust_js_snake_game.js"].exports["__wbindgen_throw"](p0i32,p1i32);
 /******/ 					}
 /******/ 				}
 /******/ 			};
@@ -191,7 +185,7 @@
 /******/
 /******/ 		// Fetch + compile chunk loading for webassembly
 /******/
-/******/ 		var wasmModules = {"0":["../pkg/wasm_snake_game_bg.wasm"]}[chunkId] || [];
+/******/ 		var wasmModules = {"0":["../pkg/rust_js_snake_game_bg.wasm"]}[chunkId] || [];
 /******/
 /******/ 		wasmModules.forEach(function(wasmModuleId) {
 /******/ 			var installedWasmModuleData = installedWasmModules[wasmModuleId];
@@ -201,7 +195,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/wasm_snake_game_bg.wasm":"7137d101ed97594eacf9"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/rust_js_snake_game_bg.wasm":"e78abaf858bdfd442b39"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
