@@ -6,7 +6,7 @@ We will learn how to export API implemented with Rust to JavaScript app.
 
 ## [Play](https://radzionc.github.io/rust-js-snake-game/)
 
-## [Blog Post](https://geekrodion.com/blog/rustsnake)
+## [Blog Post](https://radzion.com/blog/rustsnake)
 
 ## Technologies
 * Rust
@@ -15,4 +15,4 @@ We will learn how to export API implemented with Rust to JavaScript app.
 
 ## License
 
-MIT © [RodionChachura](https://geekrodion.com)
+MIT © [RodionChachura](https://radzion.com)
