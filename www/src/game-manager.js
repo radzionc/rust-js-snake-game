@@ -1,4 +1,4 @@
-import { Game, Vector } from 'wasm-snake-game'
+import { Game, Vector, Food} from 'wasm-snake-game'
 
 import CONFIG from './config'
 import { View } from './view'

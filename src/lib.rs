@@ -72,6 +72,12 @@ impl Vector {
         self.x * other.x + self.y * other.y
     }
 }
+#[derive(Copy, Clone)]
+#[wasm_bindgen]
+pub struct Food{
+    pub coord: Vector,
+    pub food_type: i8,
+}
 
 pub struct Segment<'a> {
     pub start: &'a Vector,
@@ -97,6 +103,12 @@ impl<'a> Segment<'a> {
         are_equal(self.length(), first.length() + second.length())
     }
 
+    pub fn is_point_inside_food(&self, food: &Food) -> bool {
+        let first = Segment::new(self.start, &food.coord);
+        let second = Segment::new(&food.coord, self.end);
+        are_equal(self.length(), first.length() + second.length())
+    }
+
     pub fn get_projected_point(&self, point: &Vector) -> Vector {
         let vector = self.get_vector();
         let diff = point.subtract(&self.start);
@@ -113,7 +125,7 @@ fn get_segments_from_vectors(vectors: &[Vector]) -> Vec<Segment> {
         .collect::<Vec<Segment>>()
 }
 
-fn get_food(width: i32, height: i32, snake: &[Vector]) -> Vector {
+fn get_food(width: i32, height: i32, snake: &[Vector]) -> Food {
     let segments = get_segments_from_vectors(snake);
     let mut free_positions: Vec<Vector> = Vec::new();
     for x in 0..width {
@@ -125,7 +137,7 @@ fn get_food(width: i32, height: i32, snake: &[Vector]) -> Vector {
         }
     }
     let index = rand::thread_rng().gen_range(0, free_positions.len());
-    free_positions[index]
+    Food{coord: free_positions[index], food_type: rand::thread_rng().gen_range(0, 6) % 4}
 }
 
 #[wasm_bindgen]
@@ -143,7 +155,7 @@ pub struct Game {
     pub speed: f64,
     snake: Vec<Vector>,
     pub direction: Vector,
-    pub food: Vector,
+    pub food: Food,
     pub score: i32,
 }
 
@@ -268,14 +280,15 @@ impl Game {
         let snake_len = self.snake.len();
         let head_segment = Segment::new(&self.snake[snake_len - 2], &self.snake[snake_len - 1]);
 
-        if head_segment.is_point_inside(&self.food) {
+        if head_segment.is_point_inside_food(&self.food) {
             let tail_end = &self.snake[0];
             let before_tail_end = &self.snake[1];
             let tail_segment = Segment::new(before_tail_end, &tail_end);
             let new_tail_end = tail_end.add(&tail_segment.get_vector().normalize());
             self.snake[0] = new_tail_end;
+            self.score += self.food.food_type as i32 + 1;
             self.food = get_food(self.width, self.height, &self.snake);
-            self.score += 1;
+
         }
     }
 

@@ -58,7 +58,8 @@ export class View {
     )
     this.context.globalAlpha = 1
 
-    const projectedFood = this.projectPosition(food)
+    const projectedFood = this.projectPosition(food.coord)
+
     this.context.beginPath()
     this.context.arc(
       projectedFood.x,
@@ -67,7 +68,20 @@ export class View {
       0,
       2 * Math.PI
     )
-    this.context.fillStyle = '#e74c3c'
+    switch(food.food_type){
+      case 0:
+        this.context.fillStyle = '#e74c3c';
+        break;
+      case 1:
+        this.context.fillStyle = 'green';
+        break;
+      case 2:
+        this.context.fillStyle = 'white';
+        break;
+      case 3:
+        this.context.fillStyle = 'yellow';
+        break;
+    }
     this.context.fill()
 
     this.context.lineWidth = this.unitOnScreen

@@ -7,8 +7,8 @@
     "create-wasm-app": ".bin/create-wasm-app.js"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server",
+    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && webpack --config webpack.config.js",
+    "start": "SET NODE_OPTIONS=--openssl-legacy-provider && webpack-dev-server",
     "deploy": "gh-pages -d dist"
   },
   "repository": {
